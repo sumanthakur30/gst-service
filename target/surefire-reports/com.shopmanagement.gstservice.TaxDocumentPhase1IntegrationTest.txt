@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.shopmanagement.gstservice.TaxDocumentPhase1IntegrationTest
--------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.374 s -- in com.shopmanagement.gstservice.TaxDocumentPhase1IntegrationTest

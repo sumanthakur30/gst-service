@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.shopmanagement.gstservice.EnterpriseGstTaxEngineTest
--------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.498 s -- in com.shopmanagement.gstservice.EnterpriseGstTaxEngineTest
