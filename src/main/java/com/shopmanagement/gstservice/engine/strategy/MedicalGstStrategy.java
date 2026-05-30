@@ -22,8 +22,7 @@ public class MedicalGstStrategy extends AbstractGstBusinessStrategy {
 
     @Override
     public void applyLineRules(GstCalculationContext context, GstLineContext line) {
-        slabResolver.resolveRateByHsn(line.hsnSac(), context.transactionDate())
-                .ifPresent(line::setGstPercent);
+        applyHsnRate(line, context.transactionDate());
         if ("true".equalsIgnoreCase(attr(context, "scheduleDrugExempt"))) {
             line.setGstPercent(0.0);
             line.setSupplyNature(SupplyNature.EXEMPT);

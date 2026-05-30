@@ -1,5 +1,7 @@
 package com.shopmanagement.gstservice.engine.strategy;
 
+import java.time.LocalDate;
+
 import com.shopmanagement.gstservice.engine.context.GstCalculationContext;
 import com.shopmanagement.gstservice.engine.context.GstLineContext;
 import com.shopmanagement.gstservice.model.SupplyNature;
@@ -25,5 +27,18 @@ public abstract class AbstractGstBusinessStrategy implements GstBusinessStrategy
 
     protected String attr(GstCalculationContext context, String key) {
         return context.businessAttributes().get(key);
+    }
+
+    protected void applyHsnRate(GstLineContext line, LocalDate onDate) {
+        Double rate = slabResolver.resolveRateByHsn(line.hsnSac(), onDate);
+        if (rate != null) {
+            line.setGstPercent(rate);
+        }
+    }
+
+    protected void applyHsnRateWhenMissing(GstCalculationContext context, GstLineContext line) {
+        if (line.gstPercent() == null || line.gstPercent() <= 0) {
+            applyHsnRate(line, context.transactionDate());
+        }
     }
 }

@@ -21,9 +21,6 @@ public class DefaultGstStrategy extends AbstractGstBusinessStrategy {
 
     @Override
     public void applyLineRules(GstCalculationContext context, GstLineContext line) {
-        if (line.gstPercent() == null || line.gstPercent() <= 0) {
-            slabResolver.resolveRateByHsn(line.hsnSac(), context.transactionDate())
-                    .ifPresent(line::setGstPercent);
-        }
+        applyHsnRateWhenMissing(context, line);
     }
 }

@@ -24,10 +24,7 @@ public class DistributorGstStrategy extends AbstractGstBusinessStrategy {
         if ("true".equalsIgnoreCase(attr(context, "reverseCharge"))) {
             line.setGstPercent(line.gstPercent() == null ? 18.0 : line.gstPercent());
         }
-        if (line.gstPercent() == null || line.gstPercent() <= 0) {
-            slabResolver.resolveRateByHsn(line.hsnSac(), context.transactionDate())
-                    .ifPresent(line::setGstPercent);
-        }
+        applyHsnRateWhenMissing(context, line);
         Double conversionFactor = parseDouble(attr(context, "secondaryUnitFactor"));
         if (conversionFactor != null && conversionFactor > 0) {
             line.setQuantity(line.quantity().multiply(java.math.BigDecimal.valueOf(conversionFactor)));

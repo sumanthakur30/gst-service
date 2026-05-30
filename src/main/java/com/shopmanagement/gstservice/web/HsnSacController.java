@@ -36,7 +36,8 @@ public class HsnSacController {
             @PathVariable String hsnCode,
             @RequestParam(required = false) LocalDate onDate) {
         LocalDate date = onDate == null ? LocalDate.now() : onDate;
-        double rate = slabResolver.resolveRateByHsn(hsnCode, date).orElse(0.0);
+        Double resolved = slabResolver.resolveRateByHsn(hsnCode, date);
+        double rate = resolved != null ? resolved : 0.0;
         return new HsnRateResponse(hsnCode, rate);
     }
 

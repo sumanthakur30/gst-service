@@ -25,10 +25,7 @@ public class RetailGstStrategy extends AbstractGstBusinessStrategy {
         if (line.mrp() != null && line.mrp().signum() > 0) {
             line.setUnitPrice(line.mrp());
         }
-        if (line.gstPercent() == null || line.gstPercent() <= 0) {
-            slabResolver.resolveRateByHsn(line.hsnSac(), context.transactionDate())
-                    .ifPresent(rate -> line.setGstPercent(rate));
-        }
+        applyHsnRateWhenMissing(context, line);
         line.setTaxInclusive(context.pricingMode() == PricingMode.INCLUSIVE);
     }
 }
