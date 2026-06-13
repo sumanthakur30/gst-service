@@ -88,8 +88,13 @@ public class IndiaGstTaxEngine {
         double totalTax = round2(inclusiveTaxSum + exclusiveTax);
         double combinedSubtotal = round2(inclusiveTaxableSum + exclusiveSubtotal);
 
-        TaxBreakdown breakdown = calculateHeader(combinedSubtotal, discount, totalTax, true,
-                request.sellerStateCode(), request.customerStateCode());
+        TaxBreakdown breakdown = calculateInclusiveHeader(
+                combinedSubtotal,
+                discount,
+                totalTax,
+                Math.max(0.0, round2(inclusiveTaxableSum + inclusiveTaxSum + exclusiveSubtotal + exclusiveTax - discount)),
+                request.sellerStateCode(),
+                request.customerStateCode());
 
         List<TaxLineResult> finalLines = mergeExclusiveLineTax(inclusiveLines, lines, exclusiveTax);
         return toResponse(breakdown, finalLines);
@@ -207,6 +212,47 @@ public class IndiaGstTaxEngine {
                 round2Bd(sgst),
                 round2Bd(igst),
                 round2Bd(total));
+    }
+
+    private TaxBreakdown calculateInclusiveHeader(
+            double subtotalAmount,
+            double discountAmount,
+            double taxAmount,
+            double totalAmount,
+            String shopStateCode,
+            String customerStateCode) {
+        BigDecimal subtotal = amount(subtotalAmount);
+        BigDecimal discount = amount(discountAmount);
+        BigDecimal taxable = subtotal.subtract(discount).max(BigDecimal.ZERO);
+        BigDecimal tax = amount(taxAmount).max(BigDecimal.ZERO);
+
+        boolean interState = customerStateCode != null
+                && !customerStateCode.isBlank()
+                && shopStateCode != null
+                && !shopStateCode.isBlank()
+                && !customerStateCode.trim().equals(shopStateCode.trim());
+
+        BigDecimal cgst = BigDecimal.ZERO;
+        BigDecimal sgst = BigDecimal.ZERO;
+        BigDecimal igst = BigDecimal.ZERO;
+        if (interState) {
+            igst = tax;
+        } else {
+            cgst = tax.divide(BigDecimal.valueOf(2), 6, RoundingMode.HALF_UP);
+            sgst = tax.subtract(cgst);
+        }
+
+        return new TaxBreakdown(
+                true,
+                interState,
+                round2Bd(subtotal),
+                round2Bd(discount),
+                round2Bd(taxable),
+                round2Bd(tax),
+                round2Bd(cgst),
+                round2Bd(sgst),
+                round2Bd(igst),
+                round2Bd(amount(totalAmount)));
     }
 
     public static double baseFromInclusiveUnitPrice(double inclusiveUnitPrice, double gstRatePercent) {
