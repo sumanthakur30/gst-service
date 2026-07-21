@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopmanagement.gstservice.api.GstApi.CreditNotePostRequest;
+import com.shopmanagement.gstservice.api.GstApi.DebitNotePostRequest;
 import com.shopmanagement.gstservice.api.GstApi.InvoiceNumberResponse;
 import com.shopmanagement.gstservice.api.GstApi.TaxCalculateRequest;
 import com.shopmanagement.gstservice.api.GstApi.TaxCalculateResponse;
@@ -177,6 +178,56 @@ public class TaxDocumentSnapshotService {
         return toResponse(snap);
     }
 
+    @Transactional
+    public TaxDocumentSnapshotResponse postDebitNote(DebitNotePostRequest request) {
+        long tenantId = TenantIds.require();
+        TaxDocumentSnapshot original = snapshotRepository.findByTenantIdAndId(tenantId, request.originalSnapshotId())
+                .orElseThrow(() -> new NotFoundException("Original tax snapshot not found"));
+
+        var existing = snapshotRepository.findByTenantIdAndSourceServiceAndSourceTypeAndSourceIdAndDocumentType(
+                tenantId,
+                request.sourceService(),
+                request.sourceType(),
+                request.sourceId(),
+                DocumentType.DEBIT_NOTE);
+        if (existing.isPresent()) {
+            return toResponse(existing.get());
+        }
+
+        double debitAmount = request.debitAmount();
+        if (debitAmount <= 0) {
+            throw new IllegalArgumentException("debitAmount must be positive");
+        }
+
+        double ratio = debitAmount / original.getGrandTotal().doubleValue();
+        if (ratio > 1.0) {
+            throw new IllegalArgumentException("debitAmount cannot exceed original grand total");
+        }
+
+        TaxCalculateResponse scaled = scalePositiveFromOriginal(original, ratio);
+        List<TaxLineRequest> lineRequests = List.of();
+
+        TaxDocumentSnapshot snap = buildSnapshot(
+                tenantId,
+                request.sourceService(),
+                request.sourceType(),
+                request.sourceId(),
+                request.sourceNumber(),
+                DocumentType.DEBIT_NOTE,
+                request.documentDate(),
+                original.getSellerGstRegistrationId(),
+                original.getBuyerGstin(),
+                original.getBuyerStateCode(),
+                original.getPlaceOfSupplyState(),
+                original.getSupplyType(),
+                scaled,
+                lineRequests,
+                original.getId());
+
+        snap = snapshotRepository.save(snap);
+        return toResponse(snap);
+    }
+
     private TaxCalculateResponse scaleFromOriginal(TaxDocumentSnapshot original, double ratio) {
         return new TaxCalculateResponse(
                 original.getTotalTax().compareTo(BigDecimal.ZERO) > 0,
@@ -196,8 +247,31 @@ public class TaxDocumentSnapshotService {
                 List.of());
     }
 
+    private TaxCalculateResponse scalePositiveFromOriginal(TaxDocumentSnapshot original, double ratio) {
+        return new TaxCalculateResponse(
+                original.getTotalTax().compareTo(BigDecimal.ZERO) > 0,
+                original.getIgst().compareTo(BigDecimal.ZERO) > 0,
+                scale(original.getSubtotal(), ratio),
+                scale(original.getDiscount(), ratio),
+                scale(original.getTaxableValue(), ratio),
+                scale(original.getTotalTax(), ratio),
+                scale(original.getCgst(), ratio),
+                scale(original.getSgst(), ratio),
+                scale(original.getIgst(), ratio),
+                scale(original.getGrandTotal(), ratio),
+                List.of(),
+                0.0,
+                0.0,
+                original.getBusinessType(),
+                List.of());
+    }
+
     private double negate(BigDecimal value, double ratio) {
         return round2(value.doubleValue() * ratio * -1.0);
+    }
+
+    private double scale(BigDecimal value, double ratio) {
+        return round2(Math.abs(value.doubleValue()) * ratio);
     }
 
     private Long resolveSellerRegistration(TaxDocumentPostRequest request, long tenantId) {

@@ -144,6 +144,21 @@ public final class GstApi {
             Long gstRegistrationId) {
     }
 
+    public record GstrDocumentRow(
+            Long snapshotId,
+            String documentNumber,
+            LocalDate documentDate,
+            String documentType,
+            String supplyType,
+            String buyerGstin,
+            double taxableValue,
+            double cgst,
+            double sgst,
+            double igst,
+            double cess,
+            double grandTotal) {
+    }
+
     public record GstrSummaryResponse(
             LocalDate fromDate,
             LocalDate toDate,
@@ -155,7 +170,19 @@ public final class GstApi {
             int documentCount,
             String gstr1Json,
             String gstr3bJson,
-            String hsnSummaryJson) {
+            String hsnSummaryJson,
+            List<GstrDocumentRow> documents) {
+    }
+
+    /** Portal-oriented GSTR-1 / 3B pack (prep JSON — not a live GSTN upload). */
+    public record GstrFilingPackResponse(
+            LocalDate fromDate,
+            LocalDate toDate,
+            String returnPeriod,
+            int documentCount,
+            String gstr1FilingJson,
+            String gstr3bFilingJson,
+            String disclaimer) {
     }
 
     public record TaxReverseRequest(
@@ -258,6 +285,18 @@ public final class GstApi {
             @Size(max = 64) String sourceNumber,
             @NotNull LocalDate documentDate,
             @NotNull Double returnAmount,
+            String reason) {
+    }
+
+    /** Purchase / sales debit note for GSTR CDNR (positive tax amounts). */
+    public record DebitNotePostRequest(
+            @NotNull Long originalSnapshotId,
+            @NotBlank @Size(max = 40) String sourceService,
+            @NotBlank @Size(max = 40) String sourceType,
+            @NotBlank @Size(max = 64) String sourceId,
+            @Size(max = 64) String sourceNumber,
+            @NotNull LocalDate documentDate,
+            @NotNull Double debitAmount,
             String reason) {
     }
 }

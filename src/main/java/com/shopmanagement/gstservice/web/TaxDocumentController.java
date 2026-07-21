@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopmanagement.gstservice.api.GstApi.CreditNotePostRequest;
+import com.shopmanagement.gstservice.api.GstApi.DebitNotePostRequest;
 import com.shopmanagement.gstservice.api.GstApi.InvoiceNumberRequest;
 import com.shopmanagement.gstservice.api.GstApi.InvoiceNumberResponse;
 import com.shopmanagement.gstservice.api.GstApi.TaxDocumentPostRequest;
@@ -44,6 +45,11 @@ public class TaxDocumentController {
     @PostMapping("/documents/credit-note")
     public TaxDocumentSnapshotResponse postCreditNote(@Valid @RequestBody CreditNotePostRequest request) {
         return snapshotService.postCreditNote(request);
+    }
+
+    @PostMapping("/documents/debit-note")
+    public TaxDocumentSnapshotResponse postDebitNote(@Valid @RequestBody DebitNotePostRequest request) {
+        return snapshotService.postDebitNote(request);
     }
 
     @GetMapping("/documents/{id}")

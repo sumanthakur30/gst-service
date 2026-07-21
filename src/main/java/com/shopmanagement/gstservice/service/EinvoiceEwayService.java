@@ -7,6 +7,7 @@ import com.shopmanagement.gstservice.compliance.EinvoiceProvider;
 import com.shopmanagement.gstservice.compliance.EwayBillProvider;
 import com.shopmanagement.gstservice.compliance.EwayResult;
 import com.shopmanagement.gstservice.compliance.IrnResult;
+import com.shopmanagement.gstservice.exception.NotFoundException;
 import com.shopmanagement.gstservice.model.EinvoiceRequest;
 import com.shopmanagement.gstservice.model.EwayBillRequest;
 import com.shopmanagement.gstservice.model.TaxDocumentSnapshot;
@@ -65,7 +66,7 @@ public class EinvoiceEwayService {
     public EinvoiceRequest getEinvoiceBySnapshot(Long taxDocumentSnapshotId) {
         long tenantId = TenantIds.require();
         return einvoiceRequestRepository.findByTenantIdAndTaxDocumentSnapshotId(tenantId, taxDocumentSnapshotId)
-                .orElseThrow(() -> new IllegalArgumentException("E-invoice request not found for snapshot " + taxDocumentSnapshotId));
+                .orElseThrow(() -> new NotFoundException("E-invoice not generated yet for snapshot " + taxDocumentSnapshotId));
     }
 
     @Transactional
@@ -99,7 +100,7 @@ public class EinvoiceEwayService {
     public EwayBillRequest getEwayBySnapshot(Long taxDocumentSnapshotId) {
         long tenantId = TenantIds.require();
         return ewayBillRequestRepository.findByTenantIdAndTaxDocumentSnapshotId(tenantId, taxDocumentSnapshotId)
-                .orElseThrow(() -> new IllegalArgumentException("E-way request not found for snapshot " + taxDocumentSnapshotId));
+                .orElseThrow(() -> new NotFoundException("E-way bill not generated yet for snapshot " + taxDocumentSnapshotId));
     }
 
     private EinvoiceRequest runEinvoice(EinvoiceRequest request, TaxDocumentSnapshot snapshot) {

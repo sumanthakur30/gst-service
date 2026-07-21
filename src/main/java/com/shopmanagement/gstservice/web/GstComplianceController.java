@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanagement.gstservice.api.GstApi.GstrFilingPackResponse;
 import com.shopmanagement.gstservice.api.GstApi.GstrSummaryRequest;
 import com.shopmanagement.gstservice.api.GstApi.GstrSummaryResponse;
 import com.shopmanagement.gstservice.service.GstComplianceService;
@@ -28,5 +29,11 @@ public class GstComplianceController {
     @Operation(summary = "Build GSTR-1 / 3B / HSN summary dataset from posted tax snapshots")
     public GstrSummaryResponse gstrSummary(@Valid @RequestBody GstrSummaryRequest request) {
         return complianceService.buildGstrSummary(request);
+    }
+
+    @PostMapping("/gstr-filing-pack")
+    @Operation(summary = "Build portal-oriented GSTR-1 / 3B JSON pack for filing prep (not live GSTN upload)")
+    public GstrFilingPackResponse gstrFilingPack(@Valid @RequestBody GstrSummaryRequest request) {
+        return complianceService.buildGstrFilingPack(request);
     }
 }

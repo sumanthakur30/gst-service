@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.shopmanagement.gstservice.model.DocumentType;
@@ -16,6 +17,7 @@ public interface TaxDocumentSnapshotRepository extends JpaRepository<TaxDocument
     Optional<TaxDocumentSnapshot> findByTenantIdAndSourceServiceAndSourceTypeAndSourceIdAndDocumentType(
             Long tenantId, String sourceService, String sourceType, String sourceId, DocumentType documentType);
 
+    @EntityGraph(attributePaths = "lines", type = EntityGraph.EntityGraphType.LOAD)
     List<TaxDocumentSnapshot> findByTenantIdAndDocumentDateBetweenOrderByDocumentDateDescIdDesc(
             Long tenantId, LocalDate from, LocalDate to);
 }
