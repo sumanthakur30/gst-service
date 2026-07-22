@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanagement.gstservice.compliance.ComplianceProviderStatus;
 import com.shopmanagement.gstservice.model.EinvoiceRequest;
 import com.shopmanagement.gstservice.model.EwayBillRequest;
 import com.shopmanagement.gstservice.service.EinvoiceEwayService;
@@ -43,10 +44,26 @@ public class EinvoiceEwayController {
             String transporterName) {
     }
 
+    public record CancelRequest(String reason) {
+    }
+
+    @GetMapping("/compliance/provider-status")
+    @Operation(summary = "Active e-invoice / e-way provider mode (mock default)")
+    public ComplianceProviderStatus providerStatus() {
+        return service.providerStatus();
+    }
+
     @PostMapping("/einvoice/generate")
     @Operation(summary = "Generate IRN for a posted tax snapshot (mock provider by default)")
     public EinvoiceRequest generateEinvoice(@Valid @RequestBody GenerateEinvoiceRequest body) {
         return service.generateEinvoice(body.taxDocumentSnapshotId());
+    }
+
+    @PostMapping("/einvoice/by-snapshot/{snapshotId}/cancel")
+    @Operation(summary = "Cancel IRN for a snapshot (mock or live GSP)")
+    public EinvoiceRequest cancelEinvoice(
+            @PathVariable Long snapshotId, @RequestBody(required = false) CancelRequest body) {
+        return service.cancelEinvoice(snapshotId, body != null ? body.reason() : null);
     }
 
     @GetMapping("/einvoice/by-snapshot/{snapshotId}")
@@ -63,6 +80,13 @@ public class EinvoiceEwayController {
                 body.vehicleNo(),
                 body.transporterId(),
                 body.transporterName());
+    }
+
+    @PostMapping("/eway/by-snapshot/{snapshotId}/cancel")
+    @Operation(summary = "Cancel e-way bill for a snapshot (mock or live GSP)")
+    public EwayBillRequest cancelEway(
+            @PathVariable Long snapshotId, @RequestBody(required = false) CancelRequest body) {
+        return service.cancelEway(snapshotId, body != null ? body.reason() : null);
     }
 
     @GetMapping("/eway/by-snapshot/{snapshotId}")

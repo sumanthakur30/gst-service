@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import com.shopmanagement.gstservice.model.TaxDocumentSnapshot;
 
 /**
- * Sandbox e-invoice provider — no NIC credentials. Replace with NicGspEinvoiceProvider later.
+ * Sandbox e-invoice provider — no NIC credentials.
+ * Default when {@code gst.einvoice.provider=mock} (matchIfMissing).
+ * Switch to {@link HttpGspEinvoiceProvider} with {@code gst.einvoice.provider=http} + {@code gst.gsp.base-url}.
  */
 @Component
 @ConditionalOnProperty(name = "gst.einvoice.provider", havingValue = "mock", matchIfMissing = true)
@@ -25,6 +27,11 @@ public class MockEinvoiceProvider implements EinvoiceProvider {
         String ack = String.valueOf(Math.abs(UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).getMostSignificantBits() % 1_000_000_000L));
         String qr = "mock-qr:" + irn;
         return new IrnResult(irn, ack, LocalDateTime.now(), qr, "mock");
+    }
+
+    @Override
+    public CancelResult cancel(String irn, String reason) {
+        return new CancelResult(true, "mock", "Mock IRN cancelled: " + irn);
     }
 
     private static String sha16(String value) {

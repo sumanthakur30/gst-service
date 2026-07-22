@@ -174,6 +174,37 @@ public final class GstApi {
             List<GstrDocumentRow> documents) {
     }
 
+    /** Thin books-vs-portal recon (portal values are manual stubs until GSP 2A/2B). */
+    public record GstrReconRequest(
+            @NotNull LocalDate fromDate,
+            @NotNull LocalDate toDate,
+            Long gstRegistrationId,
+            Double portalGstr1Taxable,
+            Double portalGstr1Tax,
+            Double portal3bLiability,
+            Double portalItcAvailable,
+            Double itcBooksEstimate) {
+    }
+
+    public record GstrReconLine(
+            String metric,
+            double booksValue,
+            Double portalValue,
+            Double difference,
+            String note) {
+    }
+
+    public record GstrReconResponse(
+            LocalDate fromDate,
+            LocalDate toDate,
+            double booksTaxable,
+            double booksOutputTax,
+            int booksDocumentCount,
+            Double itcBooksEstimate,
+            List<GstrReconLine> lines,
+            String disclaimer) {
+    }
+
     /** Portal-oriented GSTR-1 / 3B pack (prep JSON — not a live GSTN upload). */
     public record GstrFilingPackResponse(
             LocalDate fromDate,

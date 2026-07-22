@@ -36,4 +36,11 @@ public class GstComplianceController {
     public GstrFilingPackResponse gstrFilingPack(@Valid @RequestBody GstrSummaryRequest request) {
         return complianceService.buildGstrFilingPack(request);
     }
+
+    @PostMapping("/gst-recon-thin")
+    @Operation(summary = "Thin books vs portal recon with optional ITC books estimate")
+    public com.shopmanagement.gstservice.api.GstApi.GstrReconResponse gstReconThin(
+            @Valid @RequestBody com.shopmanagement.gstservice.api.GstApi.GstrReconRequest request) {
+        return complianceService.buildThinRecon(request);
+    }
 }

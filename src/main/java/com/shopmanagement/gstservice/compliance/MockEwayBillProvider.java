@@ -9,7 +9,9 @@ import com.shopmanagement.gstservice.model.EwayBillRequest;
 import com.shopmanagement.gstservice.model.TaxDocumentSnapshot;
 
 /**
- * Sandbox e-way provider — no NIC credentials. Replace with NicGspEwayBillProvider later.
+ * Sandbox e-way provider — no NIC credentials.
+ * Default when {@code gst.eway.provider=mock} (matchIfMissing).
+ * Switch to {@link HttpGspEwayBillProvider} with {@code gst.eway.provider=http} + {@code gst.gsp.base-url}.
  */
 @Component
 @ConditionalOnProperty(name = "gst.eway.provider", havingValue = "mock", matchIfMissing = true)
@@ -22,5 +24,10 @@ public class MockEwayBillProvider implements EwayBillProvider {
         String ewb = String.format("%012d", n % 1_000_000_000_000L);
         int days = request.getDistanceKm() != null && request.getDistanceKm() > 200 ? 3 : 1;
         return new EwayResult(ewb, LocalDateTime.now().plusDays(days), "mock");
+    }
+
+    @Override
+    public CancelResult cancel(String ewbNo, String reason) {
+        return new CancelResult(true, "mock", "Mock e-way cancelled: " + ewbNo);
     }
 }

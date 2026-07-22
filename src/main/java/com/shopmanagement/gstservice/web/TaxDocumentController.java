@@ -60,8 +60,9 @@ public class TaxDocumentController {
     @GetMapping("/documents")
     public List<TaxDocumentSnapshotResponse> list(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return snapshotService.list(from, to);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Integer size) {
+        return snapshotService.list(from, to, size);
     }
 
     @PostMapping("/invoices/next-number")

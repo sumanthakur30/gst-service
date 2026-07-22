@@ -100,6 +100,48 @@ public class GstComplianceService {
     }
 
     @Transactional(readOnly = true)
+    public com.shopmanagement.gstservice.api.GstApi.GstrReconResponse buildThinRecon(
+            com.shopmanagement.gstservice.api.GstApi.GstrReconRequest request) {
+        GstrSummaryRequest summaryReq = new GstrSummaryRequest(
+                request.fromDate(), request.toDate(), request.gstRegistrationId());
+        GstrSummaryResponse books = buildGstrSummary(summaryReq);
+        double booksTax = round2(books.cgst() + books.sgst() + books.igst());
+        double booksTaxable = books.taxableValue();
+        Double itc = request.itcBooksEstimate();
+
+        List<com.shopmanagement.gstservice.api.GstApi.GstrReconLine> lines = new ArrayList<>();
+        lines.add(line("GSTR-1 taxable (outward)", booksTaxable, request.portalGstr1Taxable(),
+                "Books from posted tax snapshots"));
+        lines.add(line("GSTR-1 output tax", booksTax, request.portalGstr1Tax(),
+                "CGST+SGST+IGST on outward supplies"));
+        lines.add(line("GSTR-3B tax liability", booksTax, request.portal3bLiability(),
+                "Simplified books liability proxy"));
+        lines.add(line(
+                "ITC available",
+                itc != null ? itc : 0.0,
+                request.portalItcAvailable(),
+                itc == null
+                        ? "Pass itcBooksEstimate from AP invoices (stock-service)"
+                        : "Books estimate from approved AP tax"));
+
+        return new com.shopmanagement.gstservice.api.GstApi.GstrReconResponse(
+                request.fromDate(),
+                request.toDate(),
+                booksTaxable,
+                booksTax,
+                books.documentCount(),
+                itc,
+                lines,
+                "Thin recon: portal columns are manual stubs until 2A/2B/GSP import. Not a GSTN filing.");
+    }
+
+    private static com.shopmanagement.gstservice.api.GstApi.GstrReconLine line(
+            String metric, double books, Double portal, String note) {
+        Double diff = portal == null ? null : round2(books - portal);
+        return new com.shopmanagement.gstservice.api.GstApi.GstrReconLine(metric, round2(books), portal, diff, note);
+    }
+
+    @Transactional(readOnly = true)
     public GstrFilingPackResponse buildGstrFilingPack(GstrSummaryRequest request) {
         List<TaxDocumentSnapshot> snapshots = loadSnapshots(request);
         String returnPeriod = String.format(

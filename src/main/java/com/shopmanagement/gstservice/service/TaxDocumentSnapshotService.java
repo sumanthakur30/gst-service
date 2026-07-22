@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,12 +64,14 @@ public class TaxDocumentSnapshotService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaxDocumentSnapshotResponse> list(LocalDate from, LocalDate to) {
+    public List<TaxDocumentSnapshotResponse> list(LocalDate from, LocalDate to, Integer size) {
         long tenantId = TenantIds.require();
         LocalDate start = from != null ? from : LocalDate.now().minusMonths(1);
         LocalDate end = to != null ? to : LocalDate.now();
+        int limit = size == null ? 200 : Math.max(1, Math.min(500, size));
         return snapshotRepository
-                .findByTenantIdAndDocumentDateBetweenOrderByDocumentDateDescIdDesc(tenantId, start, end)
+                .findByTenantIdAndDocumentDateBetweenOrderByDocumentDateDescIdDesc(
+                        tenantId, start, end, Pageable.ofSize(limit))
                 .stream()
                 .map(this::toResponse)
                 .toList();
