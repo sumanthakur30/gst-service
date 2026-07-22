@@ -30,4 +30,12 @@ public class MockEwayBillProvider implements EwayBillProvider {
     public CancelResult cancel(String ewbNo, String reason) {
         return new CancelResult(true, "mock", "Mock e-way cancelled: " + ewbNo);
     }
+
+    @Override
+    public PartBResult updatePartB(String ewbNo, PartBRequest request) {
+        String vehicle = request != null && request.vehicleNo() != null
+                ? request.vehicleNo().trim().toUpperCase()
+                : "MOCK01";
+        return new PartBResult(true, "mock", "UPDATED", "Mock Part-B updated for " + ewbNo + " vehicle " + vehicle);
+    }
 }

@@ -82,6 +82,30 @@ public class HttpGspEwayBillProvider implements EwayBillProvider {
         }
     }
 
+    @Override
+    public PartBResult updatePartB(String ewbNo, PartBRequest request) {
+        requireConfigured();
+        if (ewbNo == null || ewbNo.isBlank()) {
+            throw new IllegalArgumentException("EWB number is required for Part-B update");
+        }
+        try {
+            JsonNode json = postJson(props.getEwayPartBPath(), payloadFactory.updatePartBBody(ewbNo, request));
+            boolean ok = json.path("updated").asBoolean(true)
+                    || "UPDATED".equalsIgnoreCase(text(json, "status", "providerStatus"));
+            String status = text(json, "providerStatus", "status");
+            String message = text(json, "message");
+            return new PartBResult(
+                    ok,
+                    "http",
+                    status != null ? status : (ok ? "UPDATED" : "FAILED"),
+                    message != null ? message : "Part-B updated");
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException("GSP e-way Part-B update failed: " + ex.getMessage(), ex);
+        }
+    }
+
     private void requireConfigured() {
         if (!props.isConfigured()) {
             throw new IllegalStateException(

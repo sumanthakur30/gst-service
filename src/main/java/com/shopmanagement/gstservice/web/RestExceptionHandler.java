@@ -34,6 +34,18 @@ public class RestExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> illegalState(IllegalStateException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage() : "Illegal state";
+        // GSP misconfiguration / upstream failures — surface message to ops UI (not generic 500).
+        if (msg.contains("GSP") || msg.contains("gst.gsp") || msg.contains("GST_GSP")) {
+            log.warn("GSP / compliance state error: {}", msg);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("message", msg));
+        }
+        log.warn("Illegal state: {}", msg);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", msg));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> validation(MethodArgumentNotValidException ex) {
         String msg = ex.getBindingResult().getFieldErrors().stream()

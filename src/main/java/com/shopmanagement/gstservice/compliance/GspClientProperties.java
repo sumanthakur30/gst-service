@@ -22,6 +22,8 @@ public class GspClientProperties {
 
     private String ewayCancelPath = "/eway/cancel";
 
+    private String ewayPartBPath = "/eway/part-b";
+
     private int connectTimeoutMs = 5000;
 
     private int readTimeoutMs = 30000;
@@ -72,6 +74,14 @@ public class GspClientProperties {
 
     public void setEwayCancelPath(String ewayCancelPath) {
         this.ewayCancelPath = ewayCancelPath;
+    }
+
+    public String getEwayPartBPath() {
+        return ewayPartBPath;
+    }
+
+    public void setEwayPartBPath(String ewayPartBPath) {
+        this.ewayPartBPath = ewayPartBPath;
     }
 
     public int getConnectTimeoutMs() {

@@ -59,6 +59,17 @@ public class GspPayloadFactory {
         return body;
     }
 
+    public Map<String, Object> updatePartBBody(String ewbNo, PartBRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("ewbNo", ewbNo);
+        if (request != null) {
+            body.put("vehicleNo", request.vehicleNo());
+            body.put("fromPlace", request.fromPlace());
+            body.put("transDocNo", request.transDocNo());
+        }
+        return body;
+    }
+
     private Map<String, Object> baseDocument(TaxDocumentSnapshot snapshot) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("tenantId", snapshot.getTenantId());
