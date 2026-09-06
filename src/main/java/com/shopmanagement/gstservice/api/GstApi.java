@@ -216,6 +216,18 @@ public final class GstApi {
             String disclaimer) {
     }
 
+    /**
+     * Adapter push of the existing filing pack. {@code accepted} is true only when the GSP
+     * returns an ARN. This service never invents an ARN.
+     */
+    public record GstrFilingUploadResponse(
+            boolean accepted,
+            String status,
+            String arn,
+            String message,
+            String disclaimer) {
+    }
+
     public record TaxReverseRequest(
             @NotNull Long snapshotId,
             String reason) {

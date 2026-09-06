@@ -24,6 +24,9 @@ public class GspClientProperties {
 
     private String ewayPartBPath = "/eway/part-b";
 
+    /** Live GSP/GSTN filing adapter. Blank path still requires base-url. Never invents ARN. */
+    private String filingPath = "/gstr/upload";
+
     private int connectTimeoutMs = 5000;
 
     private int readTimeoutMs = 30000;
@@ -82,6 +85,14 @@ public class GspClientProperties {
 
     public void setEwayPartBPath(String ewayPartBPath) {
         this.ewayPartBPath = ewayPartBPath;
+    }
+
+    public String getFilingPath() {
+        return filingPath;
+    }
+
+    public void setFilingPath(String filingPath) {
+        this.filingPath = filingPath;
     }
 
     public int getConnectTimeoutMs() {
