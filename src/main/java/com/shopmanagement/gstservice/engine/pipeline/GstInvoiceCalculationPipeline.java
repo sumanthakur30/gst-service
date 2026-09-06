@@ -50,7 +50,8 @@ public class GstInvoiceCalculationPipeline {
         // Steps 1–3 + business rules per line
         for (GstLineContext line : context.lines()) {
             strategy.applyLineRules(context, line);
-            step1To3LineAmounts(line);
+            boolean inclusiveCollect = line.taxInclusive() || context.pricingMode() == PricingMode.INCLUSIVE;
+            step1To3LineAmounts(line, inclusiveCollect);
         }
 
         // Step 4–6: taxable + tax per line
@@ -110,13 +111,18 @@ public class GstInvoiceCalculationPipeline {
     }
 
     private void step1To3LineAmounts(GstLineContext line) {
+        step1To3LineAmounts(line, false);
+    }
+
+    private void step1To3LineAmounts(GstLineContext line, boolean inclusiveCollect) {
         BigDecimal qty = line.quantity() == null ? BigDecimal.ZERO : line.quantity();
         BigDecimal unitPrice = line.unitPrice() == null ? BigDecimal.ZERO : line.unitPrice();
         BigDecimal gross = unitPrice.multiply(qty).setScale(GstMoney.SCALE, GstMoney.ROUND);
-        line.setLineGross(gross);
-
-        BigDecimal discount = line.lineDiscount() == null ? BigDecimal.ZERO : line.lineDiscount();
         BigDecimal scheme = line.schemeDiscount() == null ? BigDecimal.ZERO : line.schemeDiscount();
+        // Inclusive POS unit price is already the collect amount (MRP markdown is display-only).
+        BigDecimal discount = inclusiveCollect
+                ? BigDecimal.ZERO
+                : (line.lineDiscount() == null ? BigDecimal.ZERO : line.lineDiscount());
         line.setLineGross(gross.subtract(discount).subtract(scheme).max(BigDecimal.ZERO));
     }
 
@@ -136,9 +142,9 @@ public class GstInvoiceCalculationPipeline {
         line.setResolvedGstPercent(rate);
 
         if (line.taxInclusive() || context.pricingMode() == PricingMode.INCLUSIVE) {
-            double baseUnit = IndiaGstTaxEngine.baseFromInclusiveUnitPrice(
-                    GstMoney.toDouble(line.unitPrice()), rate);
-            BigDecimal taxable = GstMoney.of(baseUnit).multiply(line.quantity()).setScale(GstMoney.SCALE, GstMoney.ROUND);
+            double taxableGross = IndiaGstTaxEngine.baseFromInclusiveUnitPrice(
+                    GstMoney.toDouble(line.lineGross()), rate);
+            BigDecimal taxable = GstMoney.of(taxableGross);
             BigDecimal tax = line.lineGross().subtract(taxable).max(BigDecimal.ZERO).setScale(GstMoney.SCALE, GstMoney.ROUND);
             line.setTaxableValue(taxable);
             line.setTaxAmount(tax);

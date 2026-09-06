@@ -22,9 +22,7 @@ public class RetailGstStrategy extends AbstractGstBusinessStrategy {
 
     @Override
     public void applyLineRules(GstCalculationContext context, GstLineContext line) {
-        if (line.mrp() != null && line.mrp().signum() > 0) {
-            line.setUnitPrice(line.mrp());
-        }
+        // MRP is a label / discount reference only. Collect GST from the billed unit price.
         applyHsnRateWhenMissing(context, line);
         line.setTaxInclusive(context.pricingMode() == PricingMode.INCLUSIVE);
     }
