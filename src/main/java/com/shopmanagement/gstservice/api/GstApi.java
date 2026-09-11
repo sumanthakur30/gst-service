@@ -52,6 +52,26 @@ public final class GstApi {
             String message) {
     }
 
+    /** Normalized GSTIN lookup for customer/party auto-fill. */
+    public record GstinDetailsResponse(
+            String gstin,
+            String legalName,
+            String tradeName,
+            String customerName,
+            String pan,
+            String registrationDate,
+            String registrationType,
+            String gstStatus,
+            String addressLine1,
+            String addressLine2,
+            String city,
+            String state,
+            String stateCode,
+            String pincode,
+            String constitutionType,
+            boolean found) {
+    }
+
     public record TaxLineRequest(
             int lineNo,
             Long productId,

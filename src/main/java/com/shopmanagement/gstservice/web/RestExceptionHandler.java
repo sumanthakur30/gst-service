@@ -12,12 +12,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.shopmanagement.gstservice.exception.ConflictException;
+import com.shopmanagement.gstservice.exception.GstinLookupException;
 import com.shopmanagement.gstservice.exception.NotFoundException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+
+    @ExceptionHandler(GstinLookupException.class)
+    public ResponseEntity<Map<String, String>> gstinLookup(GstinLookupException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of("message", ex.getMessage()));
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> notFound(NotFoundException ex) {
