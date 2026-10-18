@@ -87,7 +87,31 @@ public final class GstApi {
             String batchRef,
             String taxCategoryCode,
             Boolean taxInclusive,
-            Boolean reverseCharge) {
+            Boolean reverseCharge,
+            String freeProductHsn,
+            Double freeProductGstPercent,
+            Boolean compositeSupply) {
+
+        public TaxLineRequest(
+                int lineNo,
+                Long productId,
+                String hsnSac,
+                Double quantity,
+                Double unitPrice,
+                Double gstPercent,
+                Double discountAmount,
+                Double schemeDiscount,
+                Double freeQuantity,
+                Double cessPercent,
+                Double mrp,
+                String batchRef,
+                String taxCategoryCode,
+                Boolean taxInclusive,
+                Boolean reverseCharge) {
+            this(lineNo, productId, hsnSac, quantity, unitPrice, gstPercent, discountAmount, schemeDiscount,
+                    freeQuantity, cessPercent, mrp, batchRef, taxCategoryCode, taxInclusive, reverseCharge,
+                    null, null, null);
+        }
     }
 
     public record TaxCalculateRequest(

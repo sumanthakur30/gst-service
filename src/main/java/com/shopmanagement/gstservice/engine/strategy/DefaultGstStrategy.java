@@ -22,5 +22,6 @@ public class DefaultGstStrategy extends AbstractGstBusinessStrategy {
     @Override
     public void applyLineRules(GstCalculationContext context, GstLineContext line) {
         applyHsnRateWhenMissing(context, line);
+        applyPromotionalQuantity(line);
     }
 }
