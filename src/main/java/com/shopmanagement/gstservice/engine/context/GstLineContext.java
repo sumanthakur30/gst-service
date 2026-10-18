@@ -14,6 +14,8 @@ public class GstLineContext {
     private BigDecimal lineDiscount;
     private BigDecimal schemeDiscount;
     private BigDecimal freeQuantity;
+    private Double freeProductGstPercent;
+    private boolean compositeSupply;
     private Double gstPercent;
     private Double cessPercent;
     private BigDecimal mrp;
@@ -102,6 +104,22 @@ public class GstLineContext {
 
     public BigDecimal freeQuantity() {
         return freeQuantity;
+    }
+
+    public Double freeProductGstPercent() {
+        return freeProductGstPercent;
+    }
+
+    public void setFreeProductGstPercent(Double freeProductGstPercent) {
+        this.freeProductGstPercent = freeProductGstPercent;
+    }
+
+    public boolean compositeSupply() {
+        return compositeSupply;
+    }
+
+    public void setCompositeSupply(boolean compositeSupply) {
+        this.compositeSupply = compositeSupply;
     }
 
     public Double gstPercent() {

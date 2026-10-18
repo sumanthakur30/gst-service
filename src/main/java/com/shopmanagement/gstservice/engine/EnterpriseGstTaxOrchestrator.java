@@ -93,6 +93,9 @@ public class EnterpriseGstTaxOrchestrator {
                     line.taxCategoryCode(),
                     inclusive,
                     Boolean.TRUE.equals(line.reverseCharge())));
+            GstLineContext added = context.lines().get(context.lines().size() - 1);
+            added.setFreeProductGstPercent(line.freeProductGstPercent());
+            added.setCompositeSupply(Boolean.TRUE.equals(line.compositeSupply()));
         }
         return context;
     }

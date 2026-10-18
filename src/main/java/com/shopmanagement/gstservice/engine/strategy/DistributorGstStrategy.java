@@ -25,6 +25,7 @@ public class DistributorGstStrategy extends AbstractGstBusinessStrategy {
             line.setGstPercent(line.gstPercent() == null ? 18.0 : line.gstPercent());
         }
         applyHsnRateWhenMissing(context, line);
+        applyPromotionalQuantity(line);
         Double conversionFactor = parseDouble(attr(context, "secondaryUnitFactor"));
         if (conversionFactor != null && conversionFactor > 0) {
             line.setQuantity(line.quantity().multiply(java.math.BigDecimal.valueOf(conversionFactor)));

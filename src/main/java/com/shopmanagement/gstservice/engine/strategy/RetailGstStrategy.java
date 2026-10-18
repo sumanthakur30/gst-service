@@ -24,6 +24,7 @@ public class RetailGstStrategy extends AbstractGstBusinessStrategy {
     public void applyLineRules(GstCalculationContext context, GstLineContext line) {
         // MRP is a label / discount reference only. Collect GST from the billed unit price.
         applyHsnRateWhenMissing(context, line);
+        applyPromotionalQuantity(line);
         line.setTaxInclusive(context.pricingMode() == PricingMode.INCLUSIVE);
     }
 }
