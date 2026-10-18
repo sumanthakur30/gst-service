@@ -5,9 +5,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanagement.gstservice.api.GstApi.GstrFilingPackResponse;
+import com.shopmanagement.gstservice.api.GstApi.GstrFilingUploadResponse;
 import com.shopmanagement.gstservice.api.GstApi.GstrSummaryRequest;
 import com.shopmanagement.gstservice.api.GstApi.GstrSummaryResponse;
 import com.shopmanagement.gstservice.service.GstComplianceService;
+import com.shopmanagement.gstservice.service.GstFilingUploadService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,14 +22,36 @@ import jakarta.validation.Valid;
 public class GstComplianceController {
 
     private final GstComplianceService complianceService;
+    private final GstFilingUploadService filingUploadService;
 
-    public GstComplianceController(GstComplianceService complianceService) {
+    public GstComplianceController(
+            GstComplianceService complianceService, GstFilingUploadService filingUploadService) {
         this.complianceService = complianceService;
+        this.filingUploadService = filingUploadService;
     }
 
     @PostMapping("/gstr-summary")
     @Operation(summary = "Build GSTR-1 / 3B / HSN summary dataset from posted tax snapshots")
     public GstrSummaryResponse gstrSummary(@Valid @RequestBody GstrSummaryRequest request) {
         return complianceService.buildGstrSummary(request);
+    }
+
+    @PostMapping("/gstr-filing-pack")
+    @Operation(summary = "Build portal-oriented GSTR-1 / 3B JSON pack for filing prep (not live GSTN upload)")
+    public GstrFilingPackResponse gstrFilingPack(@Valid @RequestBody GstrSummaryRequest request) {
+        return complianceService.buildGstrFilingPack(request);
+    }
+
+    @PostMapping("/gstr-filing-upload")
+    @Operation(summary = "Push the filing pack to the configured GSP. Refuses without GST_GSP_BASE_URL. Never invents ARN.")
+    public GstrFilingUploadResponse gstrFilingUpload(@Valid @RequestBody GstrSummaryRequest request) {
+        return filingUploadService.upload(request);
+    }
+
+    @PostMapping("/gst-recon-thin")
+    @Operation(summary = "Thin books vs portal recon with optional ITC books estimate")
+    public com.shopmanagement.gstservice.api.GstApi.GstrReconResponse gstReconThin(
+            @Valid @RequestBody com.shopmanagement.gstservice.api.GstApi.GstrReconRequest request) {
+        return complianceService.buildThinRecon(request);
     }
 }

@@ -54,7 +54,7 @@ public class GstValidationService {
             if (!HSN_PATTERN.matcher(hsn).matches()) {
                 errors.add("Invalid HSN/SAC format");
             } else if (hsnSacMasterRepository.findByCodeIgnoreCase(hsn).isEmpty()) {
-                warnings.add("HSN/SAC not found in master — rate may use default slab");
+                warnings.add("HSN/SAC not found in master - rate may use default slab");
             }
         }
 

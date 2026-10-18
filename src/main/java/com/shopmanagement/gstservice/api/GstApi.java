@@ -52,6 +52,26 @@ public final class GstApi {
             String message) {
     }
 
+    /** Normalized GSTIN lookup for customer/party auto-fill. */
+    public record GstinDetailsResponse(
+            String gstin,
+            String legalName,
+            String tradeName,
+            String customerName,
+            String pan,
+            String registrationDate,
+            String registrationType,
+            String gstStatus,
+            String addressLine1,
+            String addressLine2,
+            String city,
+            String state,
+            String stateCode,
+            String pincode,
+            String constitutionType,
+            boolean found) {
+    }
+
     public record TaxLineRequest(
             int lineNo,
             Long productId,
@@ -67,7 +87,31 @@ public final class GstApi {
             String batchRef,
             String taxCategoryCode,
             Boolean taxInclusive,
-            Boolean reverseCharge) {
+            Boolean reverseCharge,
+            String freeProductHsn,
+            Double freeProductGstPercent,
+            Boolean compositeSupply) {
+
+        public TaxLineRequest(
+                int lineNo,
+                Long productId,
+                String hsnSac,
+                Double quantity,
+                Double unitPrice,
+                Double gstPercent,
+                Double discountAmount,
+                Double schemeDiscount,
+                Double freeQuantity,
+                Double cessPercent,
+                Double mrp,
+                String batchRef,
+                String taxCategoryCode,
+                Boolean taxInclusive,
+                Boolean reverseCharge) {
+            this(lineNo, productId, hsnSac, quantity, unitPrice, gstPercent, discountAmount, schemeDiscount,
+                    freeQuantity, cessPercent, mrp, batchRef, taxCategoryCode, taxInclusive, reverseCharge,
+                    null, null, null);
+        }
     }
 
     public record TaxCalculateRequest(
@@ -144,6 +188,21 @@ public final class GstApi {
             Long gstRegistrationId) {
     }
 
+    public record GstrDocumentRow(
+            Long snapshotId,
+            String documentNumber,
+            LocalDate documentDate,
+            String documentType,
+            String supplyType,
+            String buyerGstin,
+            double taxableValue,
+            double cgst,
+            double sgst,
+            double igst,
+            double cess,
+            double grandTotal) {
+    }
+
     public record GstrSummaryResponse(
             LocalDate fromDate,
             LocalDate toDate,
@@ -155,7 +214,62 @@ public final class GstApi {
             int documentCount,
             String gstr1Json,
             String gstr3bJson,
-            String hsnSummaryJson) {
+            String hsnSummaryJson,
+            List<GstrDocumentRow> documents) {
+    }
+
+    /** Thin books-vs-portal recon (portal values are manual stubs until GSP 2A/2B). */
+    public record GstrReconRequest(
+            @NotNull LocalDate fromDate,
+            @NotNull LocalDate toDate,
+            Long gstRegistrationId,
+            Double portalGstr1Taxable,
+            Double portalGstr1Tax,
+            Double portal3bLiability,
+            Double portalItcAvailable,
+            Double itcBooksEstimate) {
+    }
+
+    public record GstrReconLine(
+            String metric,
+            double booksValue,
+            Double portalValue,
+            Double difference,
+            String note) {
+    }
+
+    public record GstrReconResponse(
+            LocalDate fromDate,
+            LocalDate toDate,
+            double booksTaxable,
+            double booksOutputTax,
+            int booksDocumentCount,
+            Double itcBooksEstimate,
+            List<GstrReconLine> lines,
+            String disclaimer) {
+    }
+
+    /** Portal-oriented GSTR-1 / 3B pack (prep JSON — not a live GSTN upload). */
+    public record GstrFilingPackResponse(
+            LocalDate fromDate,
+            LocalDate toDate,
+            String returnPeriod,
+            int documentCount,
+            String gstr1FilingJson,
+            String gstr3bFilingJson,
+            String disclaimer) {
+    }
+
+    /**
+     * Adapter push of the existing filing pack. {@code accepted} is true only when the GSP
+     * returns an ARN. This service never invents an ARN.
+     */
+    public record GstrFilingUploadResponse(
+            boolean accepted,
+            String status,
+            String arn,
+            String message,
+            String disclaimer) {
     }
 
     public record TaxReverseRequest(
@@ -258,6 +372,18 @@ public final class GstApi {
             @Size(max = 64) String sourceNumber,
             @NotNull LocalDate documentDate,
             @NotNull Double returnAmount,
+            String reason) {
+    }
+
+    /** Purchase / sales debit note for GSTR CDNR (positive tax amounts). */
+    public record DebitNotePostRequest(
+            @NotNull Long originalSnapshotId,
+            @NotBlank @Size(max = 40) String sourceService,
+            @NotBlank @Size(max = 40) String sourceType,
+            @NotBlank @Size(max = 64) String sourceId,
+            @Size(max = 64) String sourceNumber,
+            @NotNull LocalDate documentDate,
+            @NotNull Double debitAmount,
             String reason) {
     }
 }

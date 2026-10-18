@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopmanagement.gstservice.api.GstApi.CreditNotePostRequest;
+import com.shopmanagement.gstservice.api.GstApi.DebitNotePostRequest;
 import com.shopmanagement.gstservice.api.GstApi.InvoiceNumberRequest;
 import com.shopmanagement.gstservice.api.GstApi.InvoiceNumberResponse;
 import com.shopmanagement.gstservice.api.GstApi.TaxDocumentPostRequest;
@@ -46,6 +47,11 @@ public class TaxDocumentController {
         return snapshotService.postCreditNote(request);
     }
 
+    @PostMapping("/documents/debit-note")
+    public TaxDocumentSnapshotResponse postDebitNote(@Valid @RequestBody DebitNotePostRequest request) {
+        return snapshotService.postDebitNote(request);
+    }
+
     @GetMapping("/documents/{id}")
     public TaxDocumentSnapshotResponse get(@PathVariable Long id) {
         return snapshotService.get(id);
@@ -54,8 +60,9 @@ public class TaxDocumentController {
     @GetMapping("/documents")
     public List<TaxDocumentSnapshotResponse> list(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return snapshotService.list(from, to);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Integer size) {
+        return snapshotService.list(from, to, size);
     }
 
     @PostMapping("/invoices/next-number")

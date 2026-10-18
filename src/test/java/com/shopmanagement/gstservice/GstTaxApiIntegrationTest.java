@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -91,5 +92,23 @@ class GstTaxApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.validFormat").value(true))
                 .andExpect(jsonPath("$.stateCode").value("29"));
+    }
+
+    @Test
+    void gstinDetails_rejectsInvalidGstin() throws Exception {
+        mockMvc.perform(get("/api/v1/gst/details/27INVALID")
+                        .header("X-Tenant-Id", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Please enter a valid GSTIN."));
+    }
+
+    @Test
+    void gstinDetails_partialWhenProviderOff() throws Exception {
+        mockMvc.perform(get("/api/v1/gst/gstin/details/29AABCU9603R1ZM")
+                        .header("X-Tenant-Id", "101"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.gstin").value("29AABCU9603R1ZM"))
+                .andExpect(jsonPath("$.pan").value("AABCU9603R"))
+                .andExpect(jsonPath("$.found").value(false));
     }
 }

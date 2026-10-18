@@ -12,12 +12,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.shopmanagement.gstservice.exception.ConflictException;
+import com.shopmanagement.gstservice.exception.GstinLookupException;
 import com.shopmanagement.gstservice.exception.NotFoundException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+
+    @ExceptionHandler(GstinLookupException.class)
+    public ResponseEntity<Map<String, String>> gstinLookup(GstinLookupException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of("message", ex.getMessage()));
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> notFound(NotFoundException ex) {
@@ -32,6 +38,18 @@ public class RestExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> badRequest(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> illegalState(IllegalStateException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage() : "Illegal state";
+        // GSP misconfiguration / upstream failures — surface message to ops UI (not generic 500).
+        if (msg.contains("GSP") || msg.contains("gst.gsp") || msg.contains("GST_GSP")) {
+            log.warn("GSP / compliance state error: {}", msg);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("message", msg));
+        }
+        log.warn("Illegal state: {}", msg);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

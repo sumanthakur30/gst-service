@@ -34,6 +34,25 @@ class IndiaGstTaxEngineTest {
         assertThat(result.igstAmount()).isZero();
     }
 
+    @Test
+    void inclusiveLine_totalRemainsEnteredGrossAmount() {
+        var result = engine.calculate(new TaxCalculateRequest(
+                true,
+                "29",
+                "29",
+                null,
+                null,
+                0.0,
+                null,
+                List.of(new TaxLineRequest(1, 10L, null, 1.0, 1525.0, 18.0, 0.0,
+                        null, null, null, null, null, null, true, null)),
+                null, null, "INCLUSIVE", null, null, null, null, null));
+
+        assertThat(result.taxableAmount()).isEqualTo(1292.37);
+        assertThat(result.taxAmount()).isEqualTo(232.63);
+        assertThat(result.totalAmount()).isEqualTo(1525.0);
+    }
+
     private TaxCalculateRequest legacyRequest(String customerState) {
         return new TaxCalculateRequest(
                 true,

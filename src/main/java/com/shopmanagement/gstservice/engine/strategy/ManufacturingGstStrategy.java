@@ -27,9 +27,6 @@ public class ManufacturingGstStrategy extends AbstractGstBusinessStrategy {
         } else if ("JOB_WORK".equalsIgnoreCase(materialType)) {
             line.setRuleApplied("JOB_WORK_GST");
         }
-        if (line.gstPercent() == null || line.gstPercent() <= 0) {
-            slabResolver.resolveRateByHsn(line.hsnSac(), context.transactionDate())
-                    .ifPresent(line::setGstPercent);
-        }
+        applyHsnRateWhenMissing(context, line);
     }
 }

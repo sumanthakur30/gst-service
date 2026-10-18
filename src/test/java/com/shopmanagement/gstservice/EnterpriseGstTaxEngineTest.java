@@ -100,6 +100,21 @@ class EnterpriseGstTaxEngineTest {
     }
 
     @Test
+    void retailInclusive_collectsSellingPriceNotMrp() {
+        TaxCalculateResponse result = orchestrator.calculate(new TaxCalculateRequest(
+                true, "09", "09", null, null, 0.0, null,
+                List.of(new TaxLineRequest(
+                        1, 1L, null, 1.0, 100.0, 18.0, 50.0,
+                        0.0, 0.0, null, 150.0, null, null, true, null)),
+                "RETAIL", "UNREGISTERED", "INCLUSIVE", LocalDate.now(), null, true, false,
+                Map.of()));
+        assertThat(result.totalAmount()).isEqualTo(100.0);
+        assertThat(result.taxableAmount()).isEqualTo(84.75);
+        assertThat(result.taxAmount()).isEqualTo(15.25);
+        assertThat(result.lines().get(0).lineTotal()).isEqualTo(100.0);
+    }
+
+    @Test
     void mixedSupply_inclusiveAndExclusiveLines() {
         TaxCalculateResponse result = orchestrator.calculate(new TaxCalculateRequest(
                 true, "29", "29", null, null, 0.0, null,

@@ -1,8 +1,6 @@
 package com.shopmanagement.gstservice.service;
 
 import java.time.LocalDate;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -31,7 +29,10 @@ public class GstSlabResolver {
     public record ResolvedSlab(String slabCode, double gstRatePercent, double cessPercent, String supplyNature) {
     }
 
-    @Cacheable(cacheNames = "gstSlabs", key = "#tenantId + ':' + #slabCode + ':' + #onDate")
+    @Cacheable(
+            cacheNames = "gstSlabs",
+            key = "T(com.shopmanagement.gstservice.support.TenantIds).currentOrNull() + ':' + #slabCode + ':' + #onDate",
+            unless = "#result == null")
     public ResolvedSlab resolveSlab(LocalDate onDate, String slabCode) {
         Long tenantId = TenantIds.currentOrNull();
         return slabRepository.findBestEffectiveSlab(tenantId, slabCode, onDate)
@@ -39,13 +40,17 @@ public class GstSlabResolver {
                 .orElse(null);
     }
 
-    @Cacheable(cacheNames = "gstHsnRates", key = "#hsnCode + ':' + #onDate")
-    public Optional<Double> resolveRateByHsn(String hsnCode, LocalDate onDate) {
+    /**
+     * Returns GST rate for an HSN/SAC, or {@code null} when code is blank (not cached).
+     * Unknown codes fall back to {@code gst.tax.default-rate-percent}.
+     */
+    @Cacheable(cacheNames = "gstHsnRates", key = "#hsnCode + ':' + #onDate", unless = "#result == null")
+    public Double resolveRateByHsn(String hsnCode, LocalDate onDate) {
         if (hsnCode == null || hsnCode.isBlank()) {
-            return Optional.empty();
+            return null;
         }
         return rateLookupRepository.findRateByHsn(hsnCode.trim(), onDate)
-                .or(() -> Optional.of(defaultRatePercent));
+                .orElse(defaultRatePercent);
     }
 
     private ResolvedSlab toResolved(GstSlabMaster slab) {
